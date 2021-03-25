@@ -12,25 +12,11 @@ def EntryPoint(prev_20_week, curr_20_week):
     ROC_cond = False
     highest_high_cond = True
 
-    # Calculate 10 week average for current week to last 10 weeks and previous week to last 10 weeks
-    sum = 0
-    for i in range(0, 10):
-        sum = sum + prev_20_week[i][0]
+    mov_avg_cond = MovingAverageTrend(prev_20_week[0:9], curr_20_week[0:9])
 
-    avg_prev_10_weeks = sum / 10
-    
-    sum = 0
-    for i in range(0, 10):
-        sum = sum + curr_20_week[i][0]
-
-    avg_curr_10_weeks = sum / 10
-
-    # Point 1 - 10 week moving average of the stock/index must be greater than last week
-    if avg_curr_10_weeks > avg_prev_10_weeks:
-        mov_avg_cond = True
-
-    print('Current moving average - {}, Previous moving average - {}'.format(avg_curr_10_weeks, avg_prev_10_weeks))
+    #print('Current moving average - {}, Previous moving average - {}'.format(avg_curr_10_weeks, avg_prev_10_weeks))
     print('Moving average condition - {}'.format(mov_avg_cond))    
+    
     # Point 2 - 20 week ROC must be above 30%
     # FORMULA - ((current closing price - closing price 20 weeks ago) / closing price 20 weeks ago) * 100
     roc = ((curr_20_week[0][0] - curr_20_week[-1][0])/curr_20_week[-1][0]) * 100
@@ -53,6 +39,26 @@ def EntryPoint(prev_20_week, curr_20_week):
 
     # If all the 3 conditions have been satisfied then this stock can be bought
     if mov_avg_cond and ROC_cond and highest_high_cond:
+        return True
+    
+    return False
+
+def MovingAverageTrend(prev_10_week, curr_10_week):
+    # Calculate 10 week average for current week to last 10 weeks and previous week to last 10 weeks
+    sum = 0
+    for closing, hh in prev_10_week:
+        sum = sum + closing
+
+    avg_prev_10_weeks = sum / 10
+    
+    sum = 0
+    for closing, hh in curr_10_week:
+        sum = sum + closing
+    
+    avg_curr_10_weeks = sum / 10
+
+    # Point 1 - 10 week moving average of the stock/index must be greater than last week
+    if avg_curr_10_weeks > avg_prev_10_weeks:
         return True
     
     return False
