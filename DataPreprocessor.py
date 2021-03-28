@@ -18,8 +18,6 @@ def preprocess(current_date):
     current_week = datetime.date(current_date[0], current_date[1], current_date[2]).isocalendar()[1]
     # Use this only for the loop
     current_year = current_date[0]
-    #print(type(datetime.date(2021, 1, 4).isocalendar()))
-    #print(datetime.date.fromisocalendar(2021, 0, 1))
     last_week = current_week - 11 if current_week >= 11 else current_week - 12
     
     week_count = 0
@@ -35,18 +33,15 @@ def preprocess(current_date):
             current_year = current_date[0] - 1
             week = weekInPast % (datetime.date(current_year, 12, 28).isocalendar()[1] + 1)   
         
-        print('Checking week - {}'.format(week))
         firstDayOfWeek = datetime.date.fromisocalendar(current_year, week, 1)
         lastDayOfWeek = datetime.date.fromisocalendar(current_year, week, 5)
         daterange = pd.date_range(firstDayOfWeek, lastDayOfWeek)
-        print('First day - {}, Last day - {}'.format(firstDayOfWeek, lastDayOfWeek))
-
+        
         weeklyStockDataDict = dict()
         for date in daterange:
             filename = 'TestData/' + date.strftime("%Y-%m-%d") + '-NSE-EQ.txt'
             # File doesn't exist, then skip
             if not os.path.exists(filename): 
-                print('{} doesnt exist'.format(filename))
                 continue
 
             f = open(filename)
@@ -60,8 +55,8 @@ def preprocess(current_date):
         weeklyDict[week_count] = weeklyStockDataDict
         week_count += 1
 
-    #print(weeklyDict)
-    with open('file.txt', 'w') as file:
+    filenm = datetime.date(current_date[0], current_date[1], current_date[2]).strftime("%Y-%m-%d") + '-weekly-data-dict.txt'
+    with open(filenm, 'w') as file:
         file.write(json.dumps(weeklyDict)) # use `json.loads` to do the reverse       
 
 def dailyDataSegregation(weeklyStockDataDict, strings, firstDayOfWeek, lastDayOfWeek, date):
@@ -93,4 +88,4 @@ def dailyDataSegregation(weeklyStockDataDict, strings, firstDayOfWeek, lastDayOf
         weeklyStockDataDict[strings[0]] = (openp, highp, lowp, closep)
 
 if __name__ == '__main__':
-    preprocess((2021, 3, 12))
+    preprocess((2021, 3, 19))
