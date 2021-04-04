@@ -18,7 +18,8 @@ def preprocess(current_date):
     current_week = datetime.date(current_date[0], current_date[1], current_date[2]).isocalendar()[1]
     # Use this only for the loop
     current_year = current_date[0]
-    last_week = current_week - 11 if current_week >= 11 else current_week - 12
+    ### CHANGE TO 20 weeks
+    last_week = current_week - 21 if current_week >= 21 else current_week - 22
     
     week_count = 0
 
@@ -55,13 +56,14 @@ def preprocess(current_date):
         weeklyDict[week_count] = weeklyStockDataDict
         week_count += 1
 
-    filenm = datetime.date(current_date[0], current_date[1], current_date[2]).strftime("%Y-%m-%d") + '-weekly-data-dict.txt'
-    with open(filenm, 'w') as file:
-        file.write(json.dumps(weeklyDict)) # use `json.loads` to do the reverse       
+    return weeklyDict
+    #filenm = datetime.date(current_date[0], current_date[1], current_date[2]).strftime("%Y-%m-%d") + '-weekly-data-dict.txt'
+    #with open(filenm, 'w') as file:
+    #    file.write(json.dumps(weeklyDict)) # use `json.loads` to do the reverse       
 
 def dailyDataSegregation(weeklyStockDataDict, strings, firstDayOfWeek, lastDayOfWeek, date):
     '''
-        weeklyStockDataDict - Given week's open, close, high and low data for all stocks
+        weeklyStockDataDict - Given week's open, high, low and close data for all stocks
         strings - a line from the data file
         firstDayOfWeek - Datetime.date class type for first working day of the week
         lastDayOfWeek - Datetime.date class type for last working day of the week

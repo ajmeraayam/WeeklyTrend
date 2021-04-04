@@ -1,7 +1,10 @@
+import datetime
+import json
+
 def EntryPoint(prev_20_week, curr_20_week):
     '''
-        prev_10_week - Array of closing and highest high values of given stock/index for each week of last 10 weeks. It contains data of 20 weeks in past starting from previous week.
-        curr_10_week - Array of closing and highest high values of given stock/index for each week of last 10 weeks. It contains data of 20 weeks in past starting from this week.
+        prev_20_week - Array of closing and highest high values of given stock/index for each week of last 20 weeks. It contains data of 20 weeks in past starting from previous week.
+        curr_20_week - Array of closing and highest high values of given stock/index for each week of last 20 weeks. It contains data of 20 weeks in past starting from this week.
 
         *Both arrays have data in descending order of time. Current data at start.*
 
@@ -62,16 +65,19 @@ def ExitSignal(buyPrice, AcceptableStopLoss, current_price):
 
     return False
 
-def WeeklyTrend(AllStockNames, BoughtStocks, AcceptableStopLoss):
+#def WeeklyTrend(AllStockNames, BoughtStocks, AcceptableStopLoss):
+def WeeklyTrend(date, WeeklyDict, AcceptableStopLoss, BoughtStocks):
     '''
-        AllStockNames - List of all the names of the stocks that are under a given Market Exchange
+        date - Current date in a tuple (year, month, day)
+        WeeklyDict - Dictionary with key as week number from current date, dating back to 11 weeks and value as dictionary of all the stocks and corresponding open, close, high, low prices.
+        AcceptableStopLoss - Stop loss percentage
         BoughtStocks - List of all the names of the stocks that are bought by the user with the buy price 
     '''
     entryStocks = []
     exitStocks = []
     stopLoss = AcceptableStopLoss
     # Convert the list of names to dictionary and initialize them to false
-    StockNameDict = dict.fromkeys(AllStockNames, False)
+    StockNameDict = {key: False for (key, value) in WeeklyDict[0].items()}
 
     # If a stock is bought by the user then change the value to true
     for stock, buyPrice in BoughtStocks:
@@ -82,8 +88,8 @@ def WeeklyTrend(AllStockNames, BoughtStocks, AcceptableStopLoss):
 
     ### Use the stock names to open the respective data files and read the data
     #### Downward trend
-    prev_20_week = [(20.0, 25.0), (21.0, 21.0), (21.5, 21.9), (21.2, 21.3), (21.9, 22.1), (22.8, 22.9), (22.5, 22.7), (22.9, 23.0), (22.4, 22.7), (22.3, 22.4), (23.2, 23.5), (23.9, 25.0), (24.5, 25.0), (24.9, 25.5), (25.7, 28.0), (27.1, 27.5), (27.2, 27.8), (27.5, 27.5), (27.3, 27.8), (27.2, 27.3)]
-    curr_20_week = [(19.8, 21.0), (20.0, 25.0), (21.0, 21.0), (21.5, 21.9), (21.2, 21.3), (21.9, 22.1), (22.8, 22.9), (22.5, 22.7), (22.9, 23.0), (22.4, 22.7), (22.3, 22.4), (23.2, 23.5), (23.9, 25.0), (24.5, 25.0), (24.9, 25.5), (25.7, 28.0), (27.1, 27.5), (27.2, 27.8), (27.5, 27.5), (27.3, 27.8)]
+    #prev_20_week = [(20.0, 25.0), (21.0, 21.0), (21.5, 21.9), (21.2, 21.3), (21.9, 22.1), (22.8, 22.9), (22.5, 22.7), (22.9, 23.0), (22.4, 22.7), (22.3, 22.4), (23.2, 23.5), (23.9, 25.0), (24.5, 25.0), (24.9, 25.5), (25.7, 28.0), (27.1, 27.5), (27.2, 27.8), (27.5, 27.5), (27.3, 27.8), (27.2, 27.3)]
+    #curr_20_week = [(19.8, 21.0), (20.0, 25.0), (21.0, 21.0), (21.5, 21.9), (21.2, 21.3), (21.9, 22.1), (22.8, 22.9), (22.5, 22.7), (22.9, 23.0), (22.4, 22.7), (22.3, 22.4), (23.2, 23.5), (23.9, 25.0), (24.5, 25.0), (24.9, 25.5), (25.7, 28.0), (27.1, 27.5), (27.2, 27.8), (27.5, 27.5), (27.3, 27.8)]
     #### Upward trend
     #prev_20_week = [(27.2, 27.3), (27.3, 27.8), (27.5, 27.5), (27.2, 27.8), (27.1, 27.5), (25.7, 28.0), (24.9, 25.5), (24.5, 25.0), (23.9, 25.0), (23.2, 23.5), (22.3, 22.4), (22.4, 22.7), (22.9, 23.0), (22.5, 22.7), (22.8, 22.9), (21.9, 22.1), (21.2, 21.3), (21.5, 21.9), (21.0, 21.0), (20.0, 25.0)]
     #curr_20_week = [(27.6, 28.9), (27.2, 27.3), (27.3, 27.8), (27.5, 27.5), (27.2, 27.8), (27.1, 27.5), (25.7, 28.0), (24.9, 25.5), (24.5, 25.0), (23.9, 25.0), (23.2, 23.5), (22.3, 22.4), (22.4, 22.7), (22.9, 23.0), (22.5, 22.7), (22.8, 22.9), (21.9, 22.1), (21.2, 21.3), (21.5, 21.9), (21.0, 21.0)]
@@ -92,6 +98,22 @@ def WeeklyTrend(AllStockNames, BoughtStocks, AcceptableStopLoss):
     # Check entry condition only for the stocks that are not bought.
     # Check exit condition only for the stocks that are bought.
     for key, value in StockNameDict.items():
+        prev_20_week = []
+        curr_20_week = []
+
+        # Find the data for given 'key' symbol for each week. Take this data and append to the list
+        for k, v in WeeklyDict.items():
+            if key in v: (openp, highp, lowp, closep) = v[key]
+            else: continue
+            
+            if k == 0:
+                curr_20_week.append((closep, highp))
+            elif k == 20:
+                prev_20_week.append((closep, highp))
+            else:
+                curr_20_week.append((closep, highp))
+                prev_20_week.append((closep, highp))
+
         # If stock is not bought
         if not value:
             entry = EntryPoint(prev_20_week, curr_20_week)
@@ -108,7 +130,6 @@ def WeeklyTrend(AllStockNames, BoughtStocks, AcceptableStopLoss):
             if exitSig:
                 exitStocks.append(key)
             print('Stock - {}, Exit - {}'.format(key, exitSig))
-    #pass
 
 if __name__ == '__main__':
     # Test sample of stock names
@@ -116,4 +137,10 @@ if __name__ == '__main__':
     names = ["ABC", "AHD", "BAS", "SND", "EUN", "ZIN", "IWE", "EIJ", "AJJ", "AJE", "POE", "FJN", "GJK", "NED", "BEP", "IDM", "QMA", "WIO", "FIP"]
     boughtStocks = [("AHD", 50.0), ("EUN", 25.0), ("WIO", 30.0), ("IDM", 35.0), ("IWE", 15.0), ("AJE", 23.0), ("POE", 28.0)]
     AcceptableStopLoss = 40
-    WeeklyTrend(names, boughtStocks, AcceptableStopLoss)
+    
+    filenm = datetime.date(2021, 3, 19).strftime("%Y-%m-%d") + '-weekly-data-dict.txt'
+    with open(filenm, 'r') as file:
+        weeklydict = json.loads(filenm) # use `json.loads` to do the reverse
+
+    print(weeklydict)
+    #WeeklyTrend(names, boughtStocks, AcceptableStopLoss)
