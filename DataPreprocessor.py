@@ -4,7 +4,7 @@ import sys
 import os.path
 import json
 
-def preprocess(current_date):
+def preprocess(current_date, index_name):
     '''
         current_date - current_date is a tuple of (year, month, day). This is the date from which we want to check the trend in past
 
@@ -51,6 +51,7 @@ def preprocess(current_date):
             for line in range(1, len(lines)):
                 strings = lines[line].split(",")
                 if strings[0] in ignoreSymbolsDict: continue
+                #if strings[0] == index_name: dailyDataSegregation(weeklyStockDataDict, strings, firstDayOfWeek, lastDayOfWeek, date)
                 dailyDataSegregation(weeklyStockDataDict, strings, firstDayOfWeek, lastDayOfWeek, date)
 
         weeklyDict[week_count] = weeklyStockDataDict
