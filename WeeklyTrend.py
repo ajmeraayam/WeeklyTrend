@@ -15,58 +15,14 @@ def IndexTrend(prev_20_week, curr_20_week):
 def ROCCheck(curr_20_week):
     return ((curr_20_week[0][0] - curr_20_week[-1][0])/curr_20_week[-1][0]) * 100
 
-    #if roc > 30:
-    #    return True
-
-    #return False
-
 def BreakoutCheck(curr_20_week):
     curr_highest_high = curr_20_week[0][1]
 
     for i in range(1, len(curr_20_week)):
         if curr_highest_high <= curr_20_week[i][1]:
             return False
-            #break
     
     return True
-
-# def EntryPoint(prev_20_week, curr_20_week):
-#     '''
-#         prev_20_week - Array of closing and highest high values of given stock/index for each week of last 20 weeks. It contains data of 20 weeks in past starting from previous week.
-#         curr_20_week - Array of closing and highest high values of given stock/index for each week of last 20 weeks. It contains data of 20 weeks in past starting from this week.
-
-#         *Both arrays have data in descending order of time. Current data at start.*
-
-#         This function calculates if current stock is ideal for entry or not.
-#     '''
-
-#     mov_avg_cond = False
-#     ROC_cond = False
-#     highest_high_cond = True
-
-#     mov_avg_cond = MovingAverageTrend(prev_20_week[0:9], curr_20_week[0:9])
-
-#     # Point 2 - 20 week ROC must be above 30%
-#     # FORMULA - ((current closing price - closing price 20 weeks ago) / closing price 20 weeks ago) * 100
-#     roc = ((curr_20_week[0][0] - curr_20_week[-1][0])/curr_20_week[-1][0]) * 100
-
-#     if roc > 30:
-#         ROC_cond = True
-
-#     # Point 3 - Stock must close above a new 20 week high
-#     # Current closing price should be above highest highs that have occured in last 20 weeks
-#     curr_highest_high = curr_20_week[0][1]
-
-#     for i in range(1, len(curr_20_week)):
-#         if curr_highest_high <= curr_20_week[i][1]:
-#             highest_high_cond = False
-#             break
-    
-#     # If all the 3 conditions have been satisfied then this stock can be bought
-#     if mov_avg_cond and ROC_cond and highest_high_cond:
-#         return True
-    
-#     return False
 
 def MovingAverageTrend(prev_20_week, curr_20_week):
     # Calculate 20 week average for current week to last 20 weeks and previous week to last 20 weeks
@@ -112,8 +68,7 @@ def IndexDataSegregation(WeeklyDict, indexName):
 
     return (prev_20_week, curr_20_week)
 
-#def WeeklyTrend(AllStockNames, BoughtStocks, AcceptableStopLoss):
-def WeeklyTrend(date, WeeklyDict, AcceptableStopLoss, BoughtStocks, indexName):
+def WeeklyTrend(date, WeeklyDict, AcceptableStopLoss, TrailingStopLoss, indexName):
     '''
         date - Current date in a tuple (year, month, day)
         WeeklyDict - Dictionary with key as week number from current date, dating back to 11 weeks and value as dictionary of all the stocks and corresponding open, close, high, low prices.
@@ -127,25 +82,12 @@ def WeeklyTrend(date, WeeklyDict, AcceptableStopLoss, BoughtStocks, indexName):
     StockNameDict = {key: False for (key, value) in WeeklyDict[0].items()}
     StockNameDict.pop(indexName, None)
 
-    # If a stock is bought by the user then change the value to true
-    for stock, buyPrice in BoughtStocks:
-        if stock in StockNameDict:
-            StockNameDict[stock] = True
-
-    BoughtStocksDict = dict(BoughtStocks)
-
-    ### Use the stock names to open the respective data files and read the data
-    #### Downward trend
-    #prev_20_week = [(20.0, 25.0), (21.0, 21.0), (21.5, 21.9), (21.2, 21.3), (21.9, 22.1), (22.8, 22.9), (22.5, 22.7), (22.9, 23.0), (22.4, 22.7), (22.3, 22.4), (23.2, 23.5), (23.9, 25.0), (24.5, 25.0), (24.9, 25.5), (25.7, 28.0), (27.1, 27.5), (27.2, 27.8), (27.5, 27.5), (27.3, 27.8), (27.2, 27.3)]
-    #curr_20_week = [(19.8, 21.0), (20.0, 25.0), (21.0, 21.0), (21.5, 21.9), (21.2, 21.3), (21.9, 22.1), (22.8, 22.9), (22.5, 22.7), (22.9, 23.0), (22.4, 22.7), (22.3, 22.4), (23.2, 23.5), (23.9, 25.0), (24.5, 25.0), (24.9, 25.5), (25.7, 28.0), (27.1, 27.5), (27.2, 27.8), (27.5, 27.5), (27.3, 27.8)]
-    #### Upward trend
-    #prev_20_week = [(27.2, 27.3), (27.3, 27.8), (27.5, 27.5), (27.2, 27.8), (27.1, 27.5), (25.7, 28.0), (24.9, 25.5), (24.5, 25.0), (23.9, 25.0), (23.2, 23.5), (22.3, 22.4), (22.4, 22.7), (22.9, 23.0), (22.5, 22.7), (22.8, 22.9), (21.9, 22.1), (21.2, 21.3), (21.5, 21.9), (21.0, 21.0), (20.0, 25.0)]
-    #curr_20_week = [(27.6, 28.9), (27.2, 27.3), (27.3, 27.8), (27.5, 27.5), (27.2, 27.8), (27.1, 27.5), (25.7, 28.0), (24.9, 25.5), (24.5, 25.0), (23.9, 25.0), (23.2, 23.5), (22.3, 22.4), (22.4, 22.7), (22.9, 23.0), (22.5, 22.7), (22.8, 22.9), (21.9, 22.1), (21.2, 21.3), (21.5, 21.9), (21.0, 21.0)]
-
+    # Find if index is in uptrend or downtrend 
     (prev_20_week_index, curr_20_week_index) = IndexDataSegregation(WeeklyDict, indexName)
     indexMA = IndexTrend(prev_20_week_index, curr_20_week_index)
 
     #f = open('test.txt', 'a')
+    #f2 = open('test2.txt', 'a')
 
     # Loop the entry and exit checks for each stock. 
     # Check entry condition only for the stocks that are not bought.
@@ -167,27 +109,29 @@ def WeeklyTrend(date, WeeklyDict, AcceptableStopLoss, BoughtStocks, indexName):
                 curr_20_week.append((closep, highp))
                 prev_20_week.append((closep, highp))
 
-        # If stock is not bought
-        if not value:
-            #entry = EntryPoint(prev_20_week, curr_20_week)
-            roc = ROCCheck(curr_20_week)
-            breakout = BreakoutCheck(curr_20_week)
-            #s = 'Name = ' + key + ', IndexMA = ' + str(indexMA) + ', Breakout = ' + str(breakout) + ', ROC = ' + str(roc) + '\n'
-            #f.write(s)
+        # Check Rate of Change for last 20 weeks
+        roc = ROCCheck(curr_20_week)
+        # Find if current closing price is greater than highest high for last 20 weeks
+        breakout = BreakoutCheck(curr_20_week)
+        #s = 'Name = ' + key + ', IndexMA = ' + str(indexMA) + ', Breakout = ' + str(breakout) + ', ROC = ' + str(roc) + '\n'
+        #f.write(s)
 
-            if indexMA and roc > 30 and breakout:
-                entryStocks.append(key)
-            #print('Stock - {}, Entry - {}'.format(key, entry))
-        # If stock is bought
-        else:
-            mov_avg = MovingAverageTrend(prev_20_week[0:9], curr_20_week[0:9])
-            if not mov_avg:
-                stopLoss = 10
+        # If index is in uptrend, ROC is greater than 30% and current closing price is highest in last 20 weeks
+        # then send a buy signal
+        if indexMA and roc > 30 and breakout:
+            entryStocks.append(key)
 
-            exitSig = ExitSignal(BoughtStocksDict[key], stopLoss, curr_20_week[0][0])
-            if exitSig:
-                exitStocks.append(key)
-            #print('Stock - {}, Exit - {}'.format(key, exitSig))
+        # If index is in downtrend then change the stop loss to trailing loss  
+        if not indexMA:
+            stopLoss = TrailingStopLoss
+
+        ex_roc = ROCCheck(curr_20_week[0:2])
+        #s2 = 'Name = ' + key + ', IndexMA = ' + str(indexMA) + ', ROC = ' + str(ex_roc) + '\n'
+        #f2.write(s2)
+        # Check if Rate of Change for 2 weeks from current date is below stop loss.
+        # If so, send a sell signal
+        if ex_roc <= (-stopLoss):
+            exitStocks.append(key)
     
     return (entryStocks, exitStocks)
 
